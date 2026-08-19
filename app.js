@@ -3,10 +3,10 @@
   const Engine = window.MinesweeperEngine;
 
   const DIFF_LABELS = {
-    beginner: 'Débutant',
-    intermediate: 'Intermédiaire',
+    beginner: 'Beginner',
+    intermediate: 'Intermediate',
     expert: 'Expert',
-    mixed: 'Mixte',
+    mixed: 'Mixed',
   };
 
   const FREEPLAY_PRESETS = {
@@ -34,6 +34,10 @@
   // DOM refs
   // ------------------------------------------------------------------
   const el = {
+    menuBtn: document.getElementById('menu-btn'),
+    closePanelBtn: document.getElementById('close-panel-btn'),
+    backdrop: document.getElementById('backdrop'),
+
     tabBank: document.getElementById('tab-bank'),
     tabFreeplay: document.getElementById('tab-freeplay'),
     viewBank: document.getElementById('view-bank'),
@@ -58,6 +62,30 @@
     board: document.getElementById('board'),
     flagModeBtn: document.getElementById('flag-mode-btn'),
   };
+
+  // ------------------------------------------------------------------
+  // Mobile screen / drawer navigation
+  // ------------------------------------------------------------------
+  function enterBoardScreen() {
+    document.body.classList.remove('view-select');
+    document.body.classList.add('view-board');
+    document.body.classList.remove('drawer-open');
+  }
+
+  function openDrawer() {
+    document.body.classList.add('drawer-open');
+  }
+
+  function closeDrawer() {
+    document.body.classList.remove('drawer-open');
+  }
+
+  el.menuBtn.addEventListener('click', openDrawer);
+  el.closePanelBtn.addEventListener('click', closeDrawer);
+  el.backdrop.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeDrawer();
+  });
 
   // ------------------------------------------------------------------
   // Helpers
@@ -96,7 +124,8 @@
   // Board rendering
   // ------------------------------------------------------------------
   function cellSizeFor(width) {
-    return Math.max(15, Math.min(30, Math.floor(640 / width)));
+    const available = Math.min(window.innerWidth - 48, 720);
+    return Math.max(14, Math.min(30, Math.floor(available / width)));
   }
 
   function buildBoardDOM(width, height) {
@@ -113,7 +142,7 @@
         btn.className = 'cell hidden';
         btn.dataset.x = x;
         btn.dataset.y = y;
-        btn.setAttribute('aria-label', `Case ${x + 1}, ${y + 1}`);
+        btn.setAttribute('aria-label', `Cell ${x + 1}, ${y + 1}`);
         btn.addEventListener('click', onCellClick);
         btn.addEventListener('contextmenu', onCellRightClick);
         btn.addEventListener('auxclick', onCellAuxClick);
@@ -177,16 +206,16 @@
 
     el.boardStatus.classList.remove('won', 'lost');
     if (g.status === 'won') {
-      el.boardStatus.textContent = '✅ Gagné — toutes les cases sûres sont révélées.';
+      el.boardStatus.textContent = '✅ Won — every safe cell is revealed.';
       el.boardStatus.classList.add('won');
       el.faceBtn.textContent = '😎';
     } else if (g.status === 'lost') {
-      el.boardStatus.textContent = '💥 Perdu — une mine a explosé.';
+      el.boardStatus.textContent = '💥 Lost — you hit a mine.';
       el.boardStatus.classList.add('lost');
       el.faceBtn.textContent = '😵';
     } else {
       el.boardStatus.textContent = state.mode === 'freeplay' && state.pendingFreeplay
-        ? 'Cliquez sur une case pour commencer (le premier coup est toujours sûr).'
+        ? 'Click a cell to start — the first click is always safe.'
         : ' ';
       el.faceBtn.textContent = '🙂';
     }
@@ -214,7 +243,7 @@
     Engine.reveal(g, level.start_cell[0], level.start_cell[1]);
 
     el.bankMeta.innerHTML =
-      `Niveau <b>#${level.id}</b> · ${DIFF_LABELS[level.difficulty]} · ` +
+      `Level <b>#${level.id}</b> · ${DIFF_LABELS[level.difficulty]} · ` +
       `${level.width}×${level.height} · <b>${level.mines}</b> mines · seed=${level.seed}`;
 
     refresh();
@@ -362,10 +391,11 @@
     const id = parseInt(el.levelIdInput.value, 10);
     const level = LEVEL_BANK.find((l) => l.id === id);
     if (!level) {
-      el.bankMeta.textContent = `Aucun niveau avec l'identifiant #${id} (1–${LEVEL_BANK.length}).`;
+      el.bankMeta.textContent = `No level with id #${id} (1–${LEVEL_BANK.length}).`;
       return;
     }
     loadBankLevel(level);
+    enterBoardScreen();
   });
 
   el.randomLevelBtn.addEventListener('click', () => {
@@ -373,6 +403,7 @@
     const id = ids[Math.floor(Math.random() * ids.length)];
     el.levelIdInput.value = id;
     loadBankLevel(LEVEL_BANK.find((l) => l.id === id));
+    enterBoardScreen();
   });
 
   el.diffCards.forEach((card) => {
@@ -396,6 +427,7 @@
     const maxMines = w * h - 9;
     m = Math.min(maxMines, Math.max(1, m || 10));
     startFreeplay(w, h, m);
+    enterBoardScreen();
   });
 
   el.faceBtn.addEventListener('click', resetCurrent);
@@ -403,7 +435,7 @@
   el.flagModeBtn.addEventListener('click', () => {
     state.flagMode = !state.flagMode;
     el.flagModeBtn.parentElement.classList.toggle('active', state.flagMode);
-    el.flagModeBtn.textContent = state.flagMode ? '🚩 Mode drapeau : ON' : '🚩 Mode drapeau : OFF';
+    el.flagModeBtn.textContent = state.flagMode ? '🚩 Flag mode: ON' : '🚩 Flag mode: OFF';
   });
 
   // ------------------------------------------------------------------
@@ -412,4 +444,6 @@
   el.levelIdInput.max = LEVEL_BANK.length;
   el.levelIdInput.value = 1;
   loadBankLevel(LEVEL_BANK[0]);
+  // Note: on mobile this only populates the board underneath the level-select
+  // screen (body starts with class "view-select"); desktop shows both at once.
 })();

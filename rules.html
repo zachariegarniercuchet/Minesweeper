@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to play — Minesweeper Solver Bench</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="grid-bg">
+
+<header class="topnav">
+  <span class="brand"><span class="dot">■</span>MINESWEEPER<span class="mono" style="color:var(--fog); font-weight:400;">/bench</span></span>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="game.html">Play</a>
+    <a href="results.html">Results</a>
+  </nav>
+</header>
+
+<main class="doc">
+  <p class="eyebrow">How to play</p>
+  <h1>Classic Minesweeper rules</h1>
+
+  <ul>
+    <li>The grid hides mines. A <b>left click</b> reveals a cell: if it's a mine, the game is lost;
+      otherwise a number shows how many mines sit among its up-to-8 neighboring cells.</li>
+    <li>If that number is <b>0</b>, all neighboring cells open automatically, cascading outward until
+      only numbered cells border the opened area.</li>
+    <li>A <b>right click</b> (or flag mode on mobile) places or removes a <b>flag 🚩</b> on a cell you
+      suspect holds a mine. Flagged cells can't be revealed until unflagged.</li>
+    <li><b>Chording</b>: clicking an already-revealed number whose count of flagged neighbors equals that
+      number instantly reveals all its remaining neighbors. Fast, but risky if a flag is misplaced.</li>
+    <li>The game is <b>won</b> once every non-mine cell is revealed — you don't need to flag every mine.</li>
+  </ul>
+
+  <h2>Keyboard controls</h2>
+  <ul>
+    <li><kbd>Tab</kbd> — move between cells</li>
+    <li><kbd>Enter</kbd> / <kbd>Space</kbd> — reveal, or chord if already revealed</li>
+    <li><kbd>F</kbd> — toggle a flag</li>
+  </ul>
+
+  <h2>Reproducible levels</h2>
+  <p>The 1000 levels in the bank are generated once, ahead of time, from a fixed master seed. Given the same
+    level id, the mine layout and starting cell are always identical — on this page, and in any Python
+    solver reading the same <code>levels.json</code>. That's what makes it possible to compare different
+    solving algorithms fairly: they all face exactly the same boards.</p>
+
+  <div class="callout">On the first click of a level, the opened cell and its neighbors are guaranteed to be
+    mine-free — so no level ever forces a first-move guess.</div>
+
+  <a class="back-link" href="game.html">← Back to the game</a>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Play — Minesweeper Solver Bench</title>
+<meta name="description" content="Play the reproducible level bank or a free-play board by hand.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="view-select">
+
+<header class="topnav">
+  <button class="icon-btn" id="menu-btn" aria-label="Open level menu">☰</button>
+  <span class="brand"><span class="dot">■</span>MINESWEEPER<span class="mono" style="color:var(--fog); font-weight:400;">/bench</span></span>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="rules.html">Rules</a>
+  </nav>
+</header>
+
+<div id="app">
+
+  <!-- ==================================================================
+       PANEL — level bank / free-play setup.
+       Desktop: sits in a static left column, always visible.
+       Mobile: full-screen "level select" on load, becomes a slide-out
+       drawer (toggled by the ☰ button) once a board is showing.
+       ================================================================== -->
+  <aside id="panel">
+    <div class="panel-head">
+      <h2>Choose a level</h2>
+      <button class="icon-btn" id="close-panel-btn" aria-label="Close menu" style="display:inline-flex;">✕</button>
+    </div>
+    <p class="panel-intro">Pick a reproducible level from the 1000-level bank, or start a free-play board
+      with your own size and mine count.</p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab bevel active" id="tab-bank" role="tab">Level bank</button>
+      <button class="tab bevel" id="tab-freeplay" role="tab">Free play</button>
+    </div>
+
+    <div class="mode-view active" id="view-bank">
+      <div class="field">
+        <span class="field-label">Difficulty</span>
+        <select id="diff-filter">
+          <option value="all">All</option>
+          <option value="beginner">Beginner (9×9, 10 mines)</option>
+          <option value="intermediate">Intermediate (16×16, 40 mines)</option>
+          <option value="expert">Expert (30×16, 99 mines)</option>
+          <option value="mixed">Mixed (variable size/density)</option>
+        </select>
+      </div>
+      <div class="field">
+        <span class="field-label">Level #</span>
+        <input type="number" id="level-id-input" min="1" value="1">
+      </div>
+      <div class="panel-actions">
+        <button class="btn bevel primary" id="load-level-btn">Load level</button>
+        <button class="btn bevel" id="random-level-btn">🎲 Random level</button>
+      </div>
+      <p class="meta-line" id="bank-meta"></p>
+    </div>
+
+    <div class="mode-view" id="view-freeplay">
+      <div class="difficulty-grid">
+        <button class="diff-card bevel active" data-diff="beginner">
+          <div class="name">Beginner</div><div class="spec">9×9 · 10 mines</div>
+        </button>
+        <button class="diff-card bevel" data-diff="intermediate">
+          <div class="name">Intermediate</div><div class="spec">16×16 · 40 mines</div>
+        </button>
+        <button class="diff-card bevel" data-diff="expert">
+          <div class="name">Expert</div><div class="spec">30×16 · 99 mines</div>
+        </button>
+      </div>
+      <div class="row-inline">
+        <div class="field"><span class="field-label">Width</span><input type="number" id="custom-width" value="9" min="5" max="40"></div>
+        <div class="field"><span class="field-label">Height</span><input type="number" id="custom-height" value="9" min="5" max="24"></div>
+        <div class="field"><span class="field-label">Mines</span><input type="number" id="custom-mines" value="10" min="1"></div>
+      </div>
+      <div class="panel-actions">
+        <button class="btn bevel primary" id="start-freeplay-btn">New game</button>
+      </div>
+      <p class="meta-line">Board generated in your browser. First click is always safe — mines are placed
+        only after you click.</p>
+    </div>
+
+    <div class="panel-divider"></div>
+    <div class="panel-links">
+      <a href="rules.html">📖 How to play</a>
+      <a href="index.html">← Back to home</a>
+    </div>
+  </aside>
+
+  <div id="backdrop"></div>
+
+  <!-- ==================================================================
+       BOARD SCREEN
+       ================================================================== -->
+  <section id="board-screen">
+    <div class="console bevel">
+      <div class="lcd">
+        <div class="digits" id="mine-digits">010</div>
+        <div class="lcd-label">Mines left</div>
+      </div>
+      <button class="face-btn bevel" id="face-btn" title="Restart">🙂</button>
+      <div class="lcd">
+        <div class="digits" id="time-digits">000</div>
+        <div class="lcd-label">Time (s)</div>
+      </div>
+    </div>
+
+    <div class="board-outer">
+      <p class="board-status" id="board-status">&nbsp;</p>
+      <div class="board" id="board"></div>
+    </div>
+
+    <div class="board-toolbar">
+      <span class="flag-toggle bevel">
+        <button class="btn" id="flag-mode-btn">🚩 Flag mode: OFF</button>
+      </span>
+      <span class="meta-line">Tip: on desktop, right-click = flag, click a revealed number = "chord". On
+        mobile, turn on flag mode to place flags by tapping.</span>
+    </div>
+  </section>
+
+</div>
+
+<script src="engine.js"></script>
+<script src="levels.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

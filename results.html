@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Results — Minesweeper Solver Bench</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="grid-bg">
+
+<header class="topnav">
+  <span class="brand"><span class="dot">■</span>MINESWEEPER<span class="mono" style="color:var(--fog); font-weight:400;">/bench</span></span>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="game.html">Play</a>
+    <a href="rules.html">Rules</a>
+  </nav>
+</header>
+
+<main class="doc">
+  <p class="eyebrow">Solver leaderboard</p>
+  <h1>Results</h1>
+  <p>Baseline solvers haven't been benchmarked here yet — this page will show win rate, average cells
+    revealed, and runtime per method, broken down by difficulty, once results are published.</p>
+
+  <div class="callout">In the meantime, baselines can be run locally and exported to CSV:</div>
+
+  <h2>Run a baseline</h2>
+  <code class="block">python src/run_baseline.py --method subset --csv src/results_subset.csv</code>
+  <code class="block">python src/run_baseline.py --method subset --guess probability --csv src/results_subset_probability.csv</code>
+
+  <h2>Compare methods</h2>
+  <code class="block">python src/run_baseline.py --compare</code>
+
+  <a class="back-link" href="game.html">← Back to the game</a>
+</main>
+
+</body>
+</html>
