@@ -64,13 +64,9 @@
   };
 
   // ------------------------------------------------------------------
-  // Mobile screen / drawer navigation
+  // Mobile drawer navigation (the level panel slides over the board)
   // ------------------------------------------------------------------
-  function enterBoardScreen() {
-    document.body.classList.remove('view-select');
-    document.body.classList.add('view-board');
-    document.body.classList.remove('drawer-open');
-  }
+  const isMobile = () => window.matchMedia('(max-width: 720px)').matches;
 
   function openDrawer() {
     document.body.classList.add('drawer-open');
@@ -395,7 +391,7 @@
       return;
     }
     loadBankLevel(level);
-    enterBoardScreen();
+    closeDrawer();
   });
 
   el.randomLevelBtn.addEventListener('click', () => {
@@ -403,7 +399,7 @@
     const id = ids[Math.floor(Math.random() * ids.length)];
     el.levelIdInput.value = id;
     loadBankLevel(LEVEL_BANK.find((l) => l.id === id));
-    enterBoardScreen();
+    closeDrawer();
   });
 
   el.diffCards.forEach((card) => {
@@ -427,7 +423,7 @@
     const maxMines = w * h - 9;
     m = Math.min(maxMines, Math.max(1, m || 10));
     startFreeplay(w, h, m);
-    enterBoardScreen();
+    closeDrawer();
   });
 
   el.faceBtn.addEventListener('click', resetCurrent);
@@ -444,6 +440,8 @@
   el.levelIdInput.max = LEVEL_BANK.length;
   el.levelIdInput.value = 1;
   loadBankLevel(LEVEL_BANK[0]);
-  // Note: on mobile this only populates the board underneath the level-select
-  // screen (body starts with class "view-select"); desktop shows both at once.
+  // On mobile, land with the level panel slid open over level 1's board, so
+  // picking a level is the very first thing you see. On desktop the panel
+  // is always visible in its own column, so this has no visible effect.
+  if (isMobile()) openDrawer();
 })();

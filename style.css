@@ -487,20 +487,13 @@ select, input[type="number"]{
     transition: transform .28s ease;
     z-index: 20;
   }
-  #board-screen{ display: none; }
+  body.drawer-open #panel{ transform: translateX(0); }
+  body.drawer-open #backdrop{ display: block; }
 
-  body.view-select #board-screen{ display: none; }
-  body.view-select #panel{
-    position: fixed; top: var(--header-h); left: 0; right: 0; bottom: 0;
-    width: auto; transform: none; z-index: 20;
-  }
-  body.view-select #close-panel-btn{ display: none; }
+  #menu-btn{ display: flex; }
+  #close-panel-btn{ display: flex; }
 
-  body.view-board #board-screen{ display: flex; }
-  body.view-board #menu-btn{ display: flex; }
-  body.view-board #close-panel-btn{ display: flex; }
-  body.view-board.drawer-open #panel{ transform: translateX(0); }
-  body.view-board.drawer-open #backdrop{ display: block; }
+  .tip-desktop{ display: none; }
 
   .difficulty-grid{ grid-template-columns: 1fr; }
   .home-hero{ padding-top: 3rem; }
