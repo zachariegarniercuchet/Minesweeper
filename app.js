@@ -66,7 +66,7 @@
   // ------------------------------------------------------------------
   // Mobile drawer navigation (the level panel slides over the board)
   // ------------------------------------------------------------------
-  const isMobile = () => window.matchMedia('(max-width: 720px)').matches;
+  const isMobile = () => window.matchMedia('(max-width: 720px), (max-height: 480px)').matches;
 
   function openDrawer() {
     document.body.classList.add('drawer-open');
@@ -119,14 +119,21 @@
   // ------------------------------------------------------------------
   // Board rendering
   // ------------------------------------------------------------------
-  function cellSizeFor(width) {
-    const available = Math.min(window.innerWidth - 48, 720);
-    return Math.max(14, Math.min(30, Math.floor(available / width)));
+  function cellSizeFor(width, height) {
+    // Fit the board within both the available width AND the available
+    // height (matters most in phone landscape, where height is the tight
+    // dimension), rather than width alone.
+    const availW = Math.min(window.innerWidth - 48, 720);
+    const reservedV = isMobile() ? 190 : 260; // header + console + status + margins
+    const availH = Math.min(window.innerHeight - reservedV, 640);
+    const byWidth = Math.floor(availW / width);
+    const byHeight = Math.floor(availH / height);
+    return Math.max(11, Math.min(30, Math.min(byWidth, byHeight)));
   }
 
   function buildBoardDOM(width, height) {
     el.board.innerHTML = '';
-    el.board.style.setProperty('--cell-size', cellSizeFor(width) + 'px');
+    el.board.style.setProperty('--cell-size', cellSizeFor(width, height) + 'px');
     el.board.style.gridTemplateColumns = `repeat(${width}, var(--cell-size, 26px))`;
     el.board.style.gridTemplateRows = `repeat(${height}, var(--cell-size, 26px))`;
 
@@ -444,4 +451,15 @@
   // picking a level is the very first thing you see. On desktop the panel
   // is always visible in its own column, so this has no visible effect.
   if (isMobile()) openDrawer();
+
+  // Re-fit the board (without rebuilding it) when the viewport changes size
+  // or orientation, e.g. rotating a phone.
+  let resizeHandle = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeHandle);
+    resizeHandle = setTimeout(() => {
+      if (!state.game) return;
+      el.board.style.setProperty('--cell-size', cellSizeFor(state.game.width, state.game.height) + 'px');
+    }, 100);
+  });
 })();

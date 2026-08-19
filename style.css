@@ -31,7 +31,11 @@
 }
 
 *, *::before, *::after{ box-sizing: border-box; }
-html{ color-scheme: dark; }
+html{
+  color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 body{
   margin: 0;
   background: var(--ink);
@@ -394,10 +398,18 @@ select, input[type="number"]{
   color: var(--bone);
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: calc(var(--cell-size) * .52);
+  font-size: calc(var(--cell-size) * .5);
+  line-height: 1;
+  overflow: hidden;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   user-select: none;
+}
+.cell.flagged, .cell.revealed.mine-cell{
+  /* Emoji glyphs render visually larger than digits at the same font-size
+     (bigger built-in bounding box), so scale them down to stay inside
+     small cells on dense boards, especially on mobile. */
+  font-size: calc(var(--cell-size) * .42);
 }
 .cell.hidden{
   background: linear-gradient(180deg, var(--panel-3), var(--panel-2));
@@ -471,10 +483,11 @@ select, input[type="number"]{
 }
 
 /* ==========================================================================
-   MOBILE LAYOUT  (<=720px) — separate "level select" screen vs "board" screen,
-   panel becomes a slide-out drawer once the board is showing.
+   MOBILE LAYOUT — compact layout for small viewports. Triggered by width
+   OR height being small, so a phone turned sideways (wide but short) still
+   gets the mobile drawer instead of snapping to the desktop split-view.
    ========================================================================== */
-@media (max-width: 720px){
+@media (max-width: 720px), (max-height: 480px){
   .icon-btn{ display: none; }
 
   #app{ display: block; }
@@ -501,7 +514,7 @@ select, input[type="number"]{
   .btn-cta{ justify-content: center; }
 }
 
-@media (min-width: 721px){
+@media (min-width: 721px) and (min-height: 481px){
   #app{ display: grid; grid-template-columns: 320px 1fr; gap: 0; }
   #panel{ height: calc(100vh - var(--header-h)); position: sticky; top: var(--header-h); }
   #board-screen{ display: flex; }
