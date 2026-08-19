@@ -45,7 +45,6 @@
 
     diffFilter: document.getElementById('diff-filter'),
     levelIdInput: document.getElementById('level-id-input'),
-    loadLevelBtn: document.getElementById('load-level-btn'),
     randomLevelBtn: document.getElementById('random-level-btn'),
     bankMeta: document.getElementById('bank-meta'),
 
@@ -122,13 +121,16 @@
   function cellSizeFor(width, height) {
     // Fit the board within both the available width AND the available
     // height (matters most in phone landscape, where height is the tight
-    // dimension), rather than width alone.
+    // dimension). Below MIN_CELL, digits/emoji stop rendering reliably on
+    // mobile browsers, so we don't shrink further than that — the board
+    // container scrolls instead (see .board { overflow: auto } in CSS).
+    const MIN_CELL = 18;
     const availW = Math.min(window.innerWidth - 48, 720);
     const reservedV = isMobile() ? 190 : 260; // header + console + status + margins
     const availH = Math.min(window.innerHeight - reservedV, 640);
     const byWidth = Math.floor(availW / width);
     const byHeight = Math.floor(availH / height);
-    return Math.max(11, Math.min(30, Math.min(byWidth, byHeight)));
+    return Math.max(MIN_CELL, Math.min(30, Math.min(byWidth, byHeight)));
   }
 
   function buildBoardDOM(width, height) {
@@ -390,13 +392,43 @@
     return LEVEL_BANK.filter((l) => l.difficulty === filter).map((l) => l.id);
   }
 
-  el.loadLevelBtn.addEventListener('click', () => {
+  const DIFF_ORDER = ['beginner', 'intermediate', 'expert', 'mixed'];
+
+  function populateLevelSelect(preserveId) {
+    const filter = el.diffFilter.value;
+    const groups = { beginner: [], intermediate: [], expert: [], mixed: [] };
+    for (const l of LEVEL_BANK) {
+      if (filter !== 'all' && l.difficulty !== filter) continue;
+      groups[l.difficulty].push(l);
+    }
+
+    el.levelIdInput.innerHTML = '';
+    for (const diff of DIFF_ORDER) {
+      if (!groups[diff].length) continue;
+      const og = document.createElement('optgroup');
+      og.label = DIFF_LABELS[diff];
+      for (const l of groups[diff]) {
+        const opt = document.createElement('option');
+        opt.value = l.id;
+        opt.textContent = `#${l.id} · ${l.width}×${l.height} · ${l.mines} mines`;
+        og.appendChild(opt);
+      }
+      el.levelIdInput.appendChild(og);
+    }
+
+    const stillValid = preserveId != null &&
+      (filter === 'all' || LEVEL_BANK.find((l) => l.id === preserveId)?.difficulty === filter);
+    el.levelIdInput.value = stillValid ? String(preserveId) : el.levelIdInput.options[0]?.value;
+  }
+
+  el.diffFilter.addEventListener('change', () => {
+    populateLevelSelect(state.currentLevelMeta ? state.currentLevelMeta.id : null);
+  });
+
+  el.levelIdInput.addEventListener('change', () => {
     const id = parseInt(el.levelIdInput.value, 10);
     const level = LEVEL_BANK.find((l) => l.id === id);
-    if (!level) {
-      el.bankMeta.textContent = `No level with id #${id} (1–${LEVEL_BANK.length}).`;
-      return;
-    }
+    if (!level) return;
     loadBankLevel(level);
     closeDrawer();
   });
@@ -404,8 +436,9 @@
   el.randomLevelBtn.addEventListener('click', () => {
     const ids = filteredLevelIds();
     const id = ids[Math.floor(Math.random() * ids.length)];
+    const level = LEVEL_BANK.find((l) => l.id === id);
     el.levelIdInput.value = id;
-    loadBankLevel(LEVEL_BANK.find((l) => l.id === id));
+    loadBankLevel(level);
     closeDrawer();
   });
 
@@ -444,8 +477,7 @@
   // ------------------------------------------------------------------
   // Init
   // ------------------------------------------------------------------
-  el.levelIdInput.max = LEVEL_BANK.length;
-  el.levelIdInput.value = 1;
+  populateLevelSelect();
   loadBankLevel(LEVEL_BANK[0]);
   // On mobile, land with the level panel slid open over level 1's board, so
   // picking a level is the very first thing you see. On desktop the panel
