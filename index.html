@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Démineur — banc d'essai pour algorithmes</title>
+<meta name="description" content="Démineur classique jouable en ligne, avec un banc de 1000 niveaux reproductibles pour comparer des solveurs.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <p class="eyebrow">Étape 1 — moteur de jeu &amp; niveaux</p>
+      <h1>DÉ<span>MINEUR</span></h1>
+      <p class="tagline">Démineur classique, jouable ici à la main. Sert aussi de socle pour comparer,
+      plus tard, plusieurs algorithmes de résolution automatique sur les mêmes 1000 grilles.</p>
+    </div>
+    <span class="badge" id="bank-size-badge">1000 niveaux · reproductibles par seed</span>
+  </header>
+
+  <section class="panel">
+    <div class="tabs" role="tablist">
+      <button class="tab active" id="tab-bank" role="tab">Banc de niveaux</button>
+      <button class="tab" id="tab-freeplay" role="tab">Partie libre</button>
+    </div>
+
+    <div class="mode-view active" id="view-bank">
+      <div class="row">
+        <span class="field-label">Difficulté</span>
+        <select id="diff-filter">
+          <option value="all">Toutes</option>
+          <option value="beginner">Débutant (9×9, 10 mines)</option>
+          <option value="intermediate">Intermédiaire (16×16, 40 mines)</option>
+          <option value="expert">Expert (30×16, 99 mines)</option>
+          <option value="mixed">Mixte (taille/densité variables)</option>
+        </select>
+        <span class="field-label">Niveau #</span>
+        <input type="number" id="level-id-input" min="1" value="1">
+        <button class="btn primary" id="load-level-btn">Charger</button>
+        <button class="btn" id="random-level-btn">🎲 Aléatoire</button>
+      </div>
+      <p class="meta-line" id="bank-meta"></p>
+    </div>
+
+    <div class="mode-view" id="view-freeplay">
+      <div class="difficulty-grid">
+        <button class="diff-card active" data-diff="beginner">
+          <div class="name">Débutant</div><div class="spec">9×9 · 10 mines</div>
+        </button>
+        <button class="diff-card" data-diff="intermediate">
+          <div class="name">Intermédiaire</div><div class="spec">16×16 · 40 mines</div>
+        </button>
+        <button class="diff-card" data-diff="expert">
+          <div class="name">Expert</div><div class="spec">30×16 · 99 mines</div>
+        </button>
+      </div>
+      <div class="row">
+        <span class="field-label">Largeur</span><input type="number" id="custom-width" value="9" min="5" max="40">
+        <span class="field-label">Hauteur</span><input type="number" id="custom-height" value="9" min="5" max="24">
+        <span class="field-label">Mines</span><input type="number" id="custom-mines" value="10" min="1">
+        <button class="btn primary" id="start-freeplay-btn">Nouvelle partie</button>
+      </div>
+      <p class="meta-line">Partie libre : grille générée dans le navigateur, premier coup toujours sûr (les mines ne sont posées qu'après votre premier clic).</p>
+    </div>
+  </section>
+
+  <div class="console">
+    <div class="lcd">
+      <div class="digits" id="mine-digits">010</div>
+      <div class="lcd-label">Mines restantes</div>
+    </div>
+    <button class="face-btn" id="face-btn" title="Recommencer">🙂</button>
+    <div class="lcd">
+      <div class="digits" id="time-digits">000</div>
+      <div class="lcd-label">Temps (s)</div>
+    </div>
+  </div>
+
+  <div class="board-outer">
+    <p class="board-status" id="board-status">&nbsp;</p>
+    <div class="board" id="board"></div>
+    <div class="board-toolbar">
+      <span class="flag-toggle">
+        <button class="btn" id="flag-mode-btn">🚩 Mode drapeau : OFF</button>
+      </span>
+      <span class="meta-line">Astuce : sur ordinateur, clic droit = drapeau, clic sur un chiffre déjà révélé = "chord". Sur mobile, activez le mode drapeau pour poser des drapeaux au toucher.</span>
+    </div>
+  </div>
+
+  <details class="rules">
+    <summary>Comment jouer — règles classiques</summary>
+    <ul>
+      <li>La grille cache des mines. Un <b>clic gauche</b> révèle une case : si c'est une mine, la partie est perdue ; sinon, un chiffre indique le nombre de mines parmi les 8 cases voisines.</li>
+      <li>Si ce chiffre vaut <b>0</b>, toutes les cases voisines s'ouvrent automatiquement, et ainsi de suite en cascade.</li>
+      <li>Un <b>clic droit</b> (ou le mode drapeau sur mobile) pose ou retire un <b>drapeau 🚩</b> sur une case suspectée d'être minée.</li>
+      <li><b>Chord</b> : cliquer sur une case déjà révélée dont le nombre de drapeaux voisins égale son chiffre révèle d'un coup toutes les autres cases voisines. Pratique, mais risqué si un drapeau est mal placé.</li>
+      <li>La partie est <b>gagnée</b> quand toutes les cases sans mine sont révélées — inutile de drapeauter chaque mine.</li>
+      <li>Au clavier : <kbd>Tab</kbd> pour naviguer entre les cases, <kbd>Entrée</kbd>/<kbd>Espace</kbd> pour révéler ou "chord", <kbd>F</kbd> pour drapeau/retirer.</li>
+    </ul>
+    <p>Les 1000 niveaux du banc sont générés une fois pour toutes par <code>generate_levels.py</code> à partir d'un seed fixe : même id ⇒ toujours la même grille de mines et la même case de départ. Cela permettra de comparer plusieurs solveurs sur exactement les mêmes grilles à l'étape suivante.</p>
+  </details>
+
+  <footer class="roadmap">
+    <div class="step done">✔ Étape 1 — moteur de jeu, règles classiques, 1000 niveaux reproductibles, page jouable manuellement (celle-ci).</div>
+    <div class="step">— Étape 2 — solveur naïf (déductions logiques locales : cases sûres / mines certaines par voisinage).</div>
+    <div class="step">— Étape 3 — solveurs plus avancés (contraintes globales / probabilités, voire recherche + heuristiques).</div>
+  </footer>
+
+</div>
+
+<script src="engine.js"></script>
+<script src="levels.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
